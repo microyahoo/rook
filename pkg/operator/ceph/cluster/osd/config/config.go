@@ -104,6 +104,6 @@ func convertToIntIgnoreErr(raw string) int {
 
 // ConfiguredDevice is a device with a corresponding configuration.
 type ConfiguredDevice struct {
-	ID          string      `json:"id"`
+	ID          string      `json:"id"` // disk id, 包括盘符号或 id 等
 	StoreConfig StoreConfig `json:"storeConfig"`
 }

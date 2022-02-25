@@ -232,9 +232,11 @@ func prepareOSD(cmd *cobra.Command, args []string) error {
 	clusterInfo.OwnerInfo = ownerInfo
 	clusterInfo.Context = cmd.Context()
 	kv := k8sutil.NewConfigMapKVStore(clusterInfo.Namespace, context.Clientset, ownerInfo)
+	// 启动 osd daemon agent
 	agent := osddaemon.NewAgent(context, dataDevices, cfg.metadataDevice, forceFormat,
 		cfg.storeConfig, &clusterInfo, cfg.nodeName, kv, cfg.pvcBacked)
 
+	// osd provisions
 	err = osddaemon.Provision(context, agent, crushLocation, topologyAffinity)
 	if err != nil {
 		// something failed in the OSD orchestration, update the status map with failure details
@@ -334,7 +336,7 @@ func parseDevices(devices string) ([]osddaemon.DesiredDevice, error) {
 		}
 		d.OSDsPerDevice = cd.StoreConfig.OSDsPerDevice
 		d.DatabaseSizeMB = cd.StoreConfig.DatabaseSizeMB
-		d.DeviceClass = cd.StoreConfig.DeviceClass
+		d.DeviceClass = cd.StoreConfig.DeviceClass // 设置 device class，这里相当于所有的 disk 设置成相同的 device class
 		d.InitialWeight = cd.StoreConfig.InitialWeight
 		d.MetadataDevice = cd.StoreConfig.MetadataDevice
 

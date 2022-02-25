@@ -196,6 +196,7 @@ func (c *Cluster) updateAndCreateOSDsLoop(
 	errs *provisionErrors, // add errors here
 ) (shouldRestart bool, err error) {
 	cmClient := c.context.Clientset.CoreV1().ConfigMaps(c.clusterInfo.Namespace)
+	// selector with 'app=rook-ceph-osd,status=provisioning'
 	selector := statusConfigMapSelector()
 
 	listOptions := metav1.ListOptions{
@@ -242,6 +243,7 @@ func (c *Cluster) updateAndCreateOSDsLoop(
 		}
 
 		select {
+		// watch osd events
 		case event, ok := <-watcher.ResultChan():
 			if !ok {
 				logger.Infof("restarting watcher for OSD provisioning status ConfigMaps. the watcher closed the channel")
@@ -261,6 +263,7 @@ func (c *Cluster) updateAndCreateOSDsLoop(
 				break // case
 			}
 
+			// watch 添加和修改事件
 			c.createOSDsForStatusMap(configMap, createConfig, errs)
 
 		case <-updateTicker.C:
@@ -324,6 +327,7 @@ func (c *Cluster) createOSDsForStatusMap(
 	logger.Infof("OSD orchestration status for %s %s is %q", nodeOrPVC, nodeOrPVCName, status.Status)
 
 	if status.Status == OrchestrationStatusCompleted {
+		// 如果 orchestration 完成，则创建 osd deployment，其会启动 osd
 		createConfig.createNewOSDsFromStatus(status, nodeOrPVCName, errs)
 		c.deleteStatusConfigMap(nodeOrPVCName) // remove the provisioning status configmap
 		return

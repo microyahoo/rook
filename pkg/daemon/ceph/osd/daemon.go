@@ -220,6 +220,7 @@ func Provision(context *clusterd.Context, agent *OsdAgent, crushLocation, topolo
 	// start the desired OSDs on devices
 	logger.Infof("configuring osd devices: %+v", devices)
 
+	// 配置 devices
 	deviceOSDs, err := agent.configureCVDevices(context, devices)
 	if err != nil {
 		return errors.Wrap(err, "failed to configure devices")
@@ -312,6 +313,7 @@ func getAvailableDevices(context *clusterd.Context, agent *OsdAgent) (*DeviceOsd
 				// job kicks in again to re-deploy the OSD.
 				continue
 			} else {
+				// 跳过包含文件系统的盘
 				logger.Infof("skipping device %q because it contains a filesystem %q", device.Name, device.Filesystem)
 				continue
 			}
@@ -427,6 +429,7 @@ func getAvailableDevices(context *clusterd.Context, agent *OsdAgent) (*DeviceOsd
 						}
 					}
 					if classNotSet {
+						// 如果 device class 没有设置，则为其设置默认值（根据类型 hdd, nvme, ssd）
 						matchedDevice.DeviceClass = sys.GetDiskDeviceClass(device)
 					}
 				}

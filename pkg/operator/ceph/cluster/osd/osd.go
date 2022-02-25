@@ -208,6 +208,7 @@ func (c *Cluster) Start() error {
 	statusConfigMaps = statusConfigMaps.Union(pvcConfigMaps)
 
 	logger.Info("start provisioning the OSDs on nodes, if needed")
+	// start rook-ceph-osd-prepare job, which will invoke 'rook ceph osd provision' command.
 	nodeConfigMaps, err := c.startProvisioningOverNodes(config, errs)
 	if err != nil {
 		return err
@@ -264,6 +265,7 @@ func deploymentOnNode(c *Cluster, osd OSDInfo, nodeName string, config *provisio
 		return nil, errors.Wrapf(err, "failed to generate config for %s", osdLongName)
 	}
 
+	// make osd deployment
 	d, err := c.makeDeployment(osdProps, osd, config)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to generate deployment for %s", osdLongName)

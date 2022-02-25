@@ -124,7 +124,7 @@ func ValidatePoolSpec(context *clusterd.Context, clusterInfo *cephclient.Cluster
 
 	// validate pool replica size
 	if p.IsReplicated() {
-		if p.Replicated.Size == 1 && p.Replicated.RequireSafeReplicaSize {
+		if p.Replicated.Size == 1 && p.Replicated.RequireSafeReplicaSize { // 如果需要安全的副本数，则不能设置为 false
 			return errors.Errorf("error pool size is %d and requireSafeReplicaSize is %t, must be false", p.Replicated.Size, p.Replicated.RequireSafeReplicaSize)
 		}
 

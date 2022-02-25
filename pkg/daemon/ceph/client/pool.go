@@ -251,7 +251,7 @@ func DeletePool(context *clusterd.Context, clusterInfo *ClusterInfo, name string
 	}
 
 	// remove the crush rule for this pool and ignore the error in case the rule is still in use or not found
-	args = []string{"osd", "crush", "rule", "rm", name}
+	args = []string{"osd", "crush", "rule", "rm", name} // crush rule 和 pool 同名
 	_, err = NewCephCommand(context, clusterInfo, args).Run()
 	if err != nil {
 		logger.Errorf("failed to delete crush rule %q. %v", name, err)
@@ -414,7 +414,7 @@ func createReplicatedPoolForApp(context *clusterd.Context, clusterInfo *ClusterI
 	checkFailureDomain := false
 
 	// The crush rule name is the same as the pool unless we have a stretch cluster.
-	crushRuleName := pool.Name
+	crushRuleName := pool.Name // crush rule 名就是 pool 名
 	if clusterSpec.IsStretchCluster() {
 		// A stretch cluster enforces using the same crush rule for all pools.
 		// The stretch cluster rule is created initially by the operator when the stretch cluster is configured
@@ -680,7 +680,7 @@ func createReplicationCrushRule(context *clusterd.Context, clusterInfo *ClusterI
 		failureDomain = cephv1.DefaultFailureDomain
 	}
 	// set the crush root to the default if not already specified
-	crushRoot := pool.CrushRoot
+	crushRoot := pool.CrushRoot // 设置 crush root
 	if pool.CrushRoot == "" {
 		crushRoot = GetCrushRootFromSpec(clusterSpec)
 	}

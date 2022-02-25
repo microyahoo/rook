@@ -95,6 +95,7 @@ func DiscoverDevices(executor exec.Executor) ([]*sys.LocalDisk, error) {
 			}
 			// lsblk will output at least 2 lines if they are partitions, one for the parent
 			// and N for the child
+			// 跳过包含 child devices 的设备
 			if len(deviceChild) > 1 {
 				logger.Infof("skipping device %q because it has child, considering the child instead.", d)
 				continue

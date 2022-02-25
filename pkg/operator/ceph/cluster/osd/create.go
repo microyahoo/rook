@@ -102,6 +102,7 @@ func (c *createConfig) createNewOSDsFromStatus(
 			}
 		} else {
 			logger.Infof("creating OSD %d on node %q", osd.ID, nodeOrPVCName)
+			// create osd daemon on node
 			err := createDaemonOnNodeFunc(c.cluster, osd, nodeOrPVCName, c.provisionConfig)
 			if err != nil {
 				errs.addError("%v", errors.Wrapf(err, "failed to create OSD %d on node %q", osd.ID, nodeOrPVCName))
@@ -342,6 +343,7 @@ func (c *Cluster) startProvisioningOverNodes(config *provisionConfig, errs *prov
 		status := OrchestrationStatus{Status: OrchestrationStatusStarting}
 		cmName := c.updateOSDStatus(n.Name, status)
 
+		// 运行 osd prepare job
 		if err := c.runPrepareJob(&osdProps, config); err != nil {
 			c.handleOrchestrationFailure(errs, n.Name, "%v", err)
 			c.deleteStatusConfigMap(n.Name)
@@ -399,6 +401,7 @@ func createDaemonOnNode(c *Cluster, osd OSDInfo, nodeName string, config *provis
 	message := fmt.Sprintf("Processing OSD %d on node %q", osd.ID, nodeName)
 	updateConditionFunc(c.clusterInfo.Context, c.context, c.clusterInfo.NamespacedName(), cephv1.ConditionProgressing, v1.ConditionTrue, cephv1.ClusterProgressingReason, message)
 
+	// create osd deployment
 	_, err = k8sutil.CreateDeployment(c.clusterInfo.Context, c.context.Clientset, d)
 	return errors.Wrapf(err, "failed to create deployment for OSD %d on node %q", osd.ID, nodeName)
 }

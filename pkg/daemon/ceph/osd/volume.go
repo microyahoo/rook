@@ -512,7 +512,7 @@ func (a *OsdAgent) useRawMode(context *clusterd.Context, pvcBacked bool) (bool, 
 		useRawMode = false
 	}
 
-	// ceph-volume raw mode mode does not support metadata device if not running on PVC because the user has specified a whole device
+	// ceph-volume raw mode does not support metadata device if not running on PVC because the user has specified a whole device
 	if a.metadataDevice != "" {
 		logger.Debugf("won't use raw mode since there is a metadata device %q", a.metadataDevice)
 		useRawMode = false
@@ -704,6 +704,7 @@ func (a *OsdAgent) initializeDevicesLVMMode(context *clusterd.Context, devices *
 				}
 
 				// execute ceph-volume immediately with the device-specific setting instead of batching up multiple devices together
+				// 为啥又执行一遍？
 				if err := context.Executor.ExecuteCommand(baseCommand, immediateExecuteArgs...); err != nil {
 					cvLog := readCVLogContent("/tmp/ceph-log/ceph-volume.log")
 					if cvLog != "" {
@@ -1066,7 +1067,7 @@ func GetCephVolumeRawOSDs(context *clusterd.Context, clusterInfo *client.Cluster
 
 		// If no block is specified let's take the one we discovered
 		if setDevicePathFromList {
-			blockPath = osdInfo.Device
+			blockPath = osdInfo.Device // 例如 /dev/mapper/ceph--5ebac10b-xxx
 		} else {
 			blockPath = block
 		}
@@ -1090,6 +1091,7 @@ func GetCephVolumeRawOSDs(context *clusterd.Context, clusterInfo *client.Cluster
 		}
 
 		if !skipDeviceClass {
+			// 如果不 skip device class，则调用 lsblk 获取 device info
 			diskInfo, err := clusterd.PopulateDeviceInfo(blockPath, context.Executor)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to get device info for %q", blockPath)

@@ -256,6 +256,7 @@ func GetDeviceFilesystems(device string, executor exec.Executor) (string, error)
 func GetDiskUUID(device string, executor exec.Executor) (string, error) {
 	if _, err := osexec.LookPath(sgdiskCmd); err != nil {
 		logger.Warningf("sgdisk not found. skipping disk UUID.")
+		// TODO(zhengliang): 不需要返回 error 吗？
 		return "sgdiskNotFound", nil
 	}
 
@@ -272,6 +273,7 @@ func GetDiskUUID(device string, executor exec.Executor) (string, error) {
 	return parseUUID(device, output)
 }
 
+// TODO(zhengliang): 目前默认写死的三种
 func GetDiskDeviceClass(disk *LocalDisk) string {
 	if disk.Rotational {
 		return "hdd"

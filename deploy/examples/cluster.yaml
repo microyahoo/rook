@@ -46,7 +46,7 @@ spec:
   mon:
     # Set the number of mons to be started. Generally recommended to be 3.
     # For highest availability, an odd number of mons should be specified.
-    count: 3
+    count: 1
     # The mons should be on unique nodes. For production, at least 3 nodes are recommended for this reason.
     # Mons should only be allowed on the same node for test environments where data loss is acceptable.
     allowMultiplePerNode: false
@@ -66,9 +66,9 @@ spec:
     # serve the dashboard under a subpath (useful when you are accessing the dashboard via a reverse proxy)
     # urlPrefix: /ceph-dashboard
     # serve the dashboard at the given port.
-    # port: 8443
+    port: 7000
     # serve the dashboard using SSL
-    ssl: true
+    ssl: false
   # enable prometheus alerting for cluster
   monitoring:
     # requires Prometheus to be pre-installed
@@ -81,7 +81,7 @@ spec:
     rulesNamespace: rook-ceph
   network:
     # enable host networking
-    #provider: host
+    provider: host
     # enable the Multus network provider
     #provider: multus
     #selectors:
@@ -135,7 +135,37 @@ spec:
   # To control where various services will be scheduled by kubernetes, use the placement configuration sections below.
   # The example under 'all' would have all services scheduled on kubernetes nodes labeled with 'role=storage-node' and
   # tolerate taints with a key of 'storage-node'.
-#  placement:
+  placement:
+    mon:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mon
+              operator: In
+              values:
+              - enabled
+ 
+    osd:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-osd
+              operator: In
+              values:
+              - enabled
+ 
+    mgr:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mgr
+              operator: In
+              values:
+              - enabled
+# placement:
 #    all:
 #      nodeAffinity:
 #        requiredDuringSchedulingIgnoredDuringExecution:
@@ -213,8 +243,18 @@ spec:
 #    mgr: rook-ceph-mgr-priority-class
 #    crashcollector: rook-ceph-crashcollector-priority-class
   storage: # cluster level storage configuration and selection
-    useAllNodes: true
-    useAllDevices: true
+    useAllNodes: false
+    useAllDevices: false
+    nodes:
+    - name: "glusterfs-1.deeproute.ai"  #指定存储节点主机，不能使用 IP 地址
+      devices:
+      - name: "vdb"    #指定磁盘为nvme0n1p1
+    - name: "glusterfs-2.deeproute.ai"  #指定存储节点主机
+      devices:
+      - name: "vdb"
+    - name: "glusterfs-3.deeproute.ai"  #指定存储节点主机
+      devices:
+      - name: "vdb"
     #deviceFilter:
     config:
       # crushRoot: "custom-root" # specify a non-default root label for the CRUSH map

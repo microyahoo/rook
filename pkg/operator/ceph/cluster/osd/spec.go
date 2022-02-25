@@ -320,7 +320,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 		{Name: "CEPH_ARGS", Value: "-m $(ROOK_CEPH_MON_HOST)"},
 		blockPathEnvVariable(osd.BlockPath),
 		cvModeEnvVariable(osd.CVMode),
-		dataDeviceClassEnvVar(osd.DeviceClass),
+		dataDeviceClassEnvVar(osd.DeviceClass), // set device clas env
 	}...)
 	configEnvVars := append(c.getConfigEnvVars(osdProps, dataDir), []v1.EnvVar{
 		{Name: "ROOK_OSD_ID", Value: osdID},
@@ -418,6 +418,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 	// so that it can pick the already mounted/activated osd metadata path
 	// This container will activate the OSD and place the activated filesinto an empty dir
 	// The empty dir will be shared by the "activate-osd" pod and the "osd" main pod
+	// 设置 osd init container
 	activateOSDVolume, activateOSDContainer := c.getActivateOSDInitContainer(c.spec.DataDirHostPath, c.clusterInfo.Namespace, osdID, osd, osdProps)
 	if !osdProps.onPVC() {
 		volumes = append(volumes, activateOSDVolume...)
@@ -500,6 +501,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 		initContainers = append(initContainers, c.getActivatePVCInitContainer(osdProps, osdID))
 		initContainers = append(initContainers, c.getExpandPVCInitContainer(osdProps, osdID))
 	} else {
+		// add activate osd container to init containers
 		initContainers = append(initContainers, *activateOSDContainer)
 	}
 
@@ -579,6 +581,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 	if c.spec.Network.IsHost() {
 		podTemplateSpec.Spec.DNSPolicy = v1.DNSClusterFirstWithHostNet
 	} else if c.spec.Network.IsMultus() {
+		// apply multus network
 		if err := k8sutil.ApplyMultus(c.spec.Network, &podTemplateSpec.ObjectMeta); err != nil {
 			return nil, err
 		}
@@ -762,6 +765,7 @@ func (c *Cluster) getActivateOSDInitContainer(configDir, namespace, osdID string
 		Command: []string{
 			"/bin/bash",
 			"-c",
+			// create container to activate osd on node
 			fmt.Sprintf(activateOSDOnNodeCode, osdInfo.UUID, osdStore, osdInfo.CVMode, blockPathVarName),
 		},
 		Name:            "activate",

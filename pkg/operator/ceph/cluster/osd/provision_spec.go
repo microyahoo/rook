@@ -132,6 +132,7 @@ func (c *Cluster) provisionPodTemplateSpec(osdProps osdProperties, restart v1.Re
 		return nil, errors.New("empty volumes")
 	}
 
+	// provision osd container
 	provisionContainer, err := c.provisionOSDContainer(osdProps, copyBinariesContainer.VolumeMounts[0], provisionConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate OSD provisioning container")
