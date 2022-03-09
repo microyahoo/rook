@@ -245,6 +245,7 @@ func checkMatchingDevice(checkDev sys.LocalDisk, devices []sys.LocalDisk) *sys.L
 		// check if devices should be considered the same. the uuid can be
 		// unstable, so we also use the reported serial and device name, which
 		// appear to be more stable.
+		// TODO(zhengliang): 这个地方有漏洞，UUID 有可能都为空，或者由于 sgdisk 不存在，UUID 都被赋值为 sgdiskNotFound
 		if checkDev.UUID == dev.UUID {
 			return &devices[i]
 		}
@@ -255,6 +256,7 @@ func checkMatchingDevice(checkDev sys.LocalDisk, devices []sys.LocalDisk) *sys.L
 			return &devices[i]
 		}
 
+		// TODO(zhengliang): 如果 UUID 和 ID 都不相等，即使 name 相等也可能是不同的 device
 		if checkDev.Name == dev.Name {
 			return &devices[i]
 		}

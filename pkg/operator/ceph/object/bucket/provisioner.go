@@ -67,6 +67,7 @@ func NewProvisioner(context *clusterd.Context, clusterInfo *client.ClusterInfo) 
 
 // Provision creates an s3 bucket and returns a connection info
 // representing the bucket's endpoint and user access credentials.
+// TODO(zhengliang): object storage provision
 func (p Provisioner) Provision(options *apibkt.BucketOptions) (*bktv1alpha1.ObjectBucket, error) {
 	logger.Debugf("Provision event for OB options: %+v", options)
 
@@ -648,6 +649,7 @@ func (p *Provisioner) setAdminOpsAPIClient() error {
 	}
 
 	// Build endpoint
+	// 构建 endpoint, 格式为: http://rook-ceph-rgw-<my-store>.<rook-ceph>.svc:80/admin
 	s3endpoint := cephObject.BuildDNSEndpoint(cephObject.BuildDomainName(p.objectContext.Name, cephObjectStore.Namespace), p.storePort, cephObjectStore.Spec.IsTLSEnabled())
 
 	// If DEBUG level is set we will mutate the HTTP client for printing request and response

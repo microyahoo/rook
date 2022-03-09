@@ -46,7 +46,7 @@ spec:
   mon:
     # Set the number of mons to be started. Generally recommended to be 3.
     # For highest availability, an odd number of mons should be specified.
-    count: 1
+    count: 3
     # The mons should be on unique nodes. For production, at least 3 nodes are recommended for this reason.
     # Mons should only be allowed on the same node for test environments where data loss is acceptable.
     allowMultiplePerNode: false
@@ -54,7 +54,7 @@ spec:
     # When higher availability of the mgr is needed, increase the count to 2.
     # In that case, one mgr will be active and one in standby. When Ceph updates which
     # mgr is active, Rook will update the mgr services to match the active mgr.
-    count: 1
+    count: 2
     modules:
       # Several modules should not need to be included in this list. The "dashboard" and "monitoring" modules
       # are already enabled by other settings in the cluster CR.
@@ -81,7 +81,7 @@ spec:
     rulesNamespace: rook-ceph
   network:
     # enable host networking
-    provider: host
+    # provider: host
     # enable the Multus network provider
     #provider: multus
     #selectors:
@@ -246,15 +246,18 @@ spec:
     useAllNodes: false
     useAllDevices: false
     nodes:
-    - name: "glusterfs-1.deeproute.ai"  #指定存储节点主机，不能使用 IP 地址
-      devices:
-      - name: "vdb"    #指定磁盘为nvme0n1p1
-    - name: "glusterfs-2.deeproute.ai"  #指定存储节点主机
+    - name: "k1"  #指定存储节点主机，不能使用 IP 地址
       devices:
       - name: "vdb"
-    - name: "glusterfs-3.deeproute.ai"  #指定存储节点主机
+      - name: "vdc"
+    - name: "k2"  #指定存储节点主机
       devices:
       - name: "vdb"
+      - name: "vdc"
+    - name: "k3"  #指定存储节点主机
+      devices:
+      - name: "vdb"
+      - name: "vdc"
     #deviceFilter:
     config:
       # crushRoot: "custom-root" # specify a non-default root label for the CRUSH map

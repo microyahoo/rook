@@ -17,9 +17,9 @@ spec:
      # maxSize: 10G
      # maxObjects: 10000
   # Additional permissions given to the user
-  # capabilities:
-     # user: "*"
-     # bucket: "*"
-     # metadata: "*"
-     # usage: "*"
-     # zone: "*"
+  capabilities:
+     user: "*"
+     bucket: "*"
+     metadata: "*"
+     usage: "*"
+     zone: "*"

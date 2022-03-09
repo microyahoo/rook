@@ -13,6 +13,8 @@ spec:
   # The pool spec used to create the metadata pools. Must use replication.
   metadataPool:
     failureDomain: host
+    crushRoot: root1
+    deviceClass: hdd
     replicated:
       size: 3
       # Disallow setting pool with replica 1, this could lead to data loss without recovery.
@@ -28,6 +30,8 @@ spec:
   # The pool spec used to create the data pool. Can use replication or erasure coding.
   dataPool:
     failureDomain: host
+    crushRoot: root2
+    deviceClass: hdd
     erasureCoded:
       dataChunks: 2
       codingChunks: 1

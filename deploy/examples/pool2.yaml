@@ -14,7 +14,7 @@ spec:
   failureDomain: host
   # For a pool based on raw copies, specify the number of copies. A size of 1 indicates no redundancy.
   replicated:
-    size: 1
+    size: 3
     # Disallow setting pool with replica 1, this could lead to data loss without recovery.
     # Make sure you're *ABSOLUTELY CERTAIN* that is what you want
     requireSafeReplicaSize: false

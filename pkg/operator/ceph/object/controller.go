@@ -355,7 +355,7 @@ func (r *ReconcileCephObjectStore) reconcileCreateObjectStore(cephObjectStore *c
 		client:      r.client,
 		ownerInfo:   ownerInfo,
 	}
-	objContext := NewContext(r.context, r.clusterInfo, cephObjectStore.Name)
+	objContext := NewContext(r.context, r.clusterInfo, cephObjectStore.Name) // object store name
 	objContext.UID = string(cephObjectStore.UID)
 	objContext.CephClusterSpec = cluster
 
@@ -451,6 +451,7 @@ func (r *ReconcileCephObjectStore) reconcileCreateObjectStore(cephObjectStore *c
 	return reconcile.Result{}, nil
 }
 
+// TODO(zhengliang):
 func (r *ReconcileCephObjectStore) reconcileCephZone(store *cephv1.CephObjectStore, zoneGroupName string, realmName string) (reconcile.Result, error) {
 	realmArg := fmt.Sprintf("--rgw-realm=%s", realmName)
 	zoneGroupArg := fmt.Sprintf("--rgw-zonegroup=%s", zoneGroupName)
