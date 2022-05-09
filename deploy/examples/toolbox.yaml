@@ -24,9 +24,10 @@ spec:
           imagePullPolicy: IfNotPresent
           tty: true
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 2016
-            runAsGroup: 2016
+            privileged: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
           env:
             - name: ROOK_CEPH_USERNAME
               valueFrom:
@@ -39,6 +40,21 @@ spec:
                   name: rook-ceph-mon
                   key: ceph-secret
           volumeMounts:
+            - mountPath: /var/lib/rook
+              name: rook-data
+            - mountPath: /var/log/ceph
+              name: rook-ceph-log
+            - mountPath: /var/lib/ceph/crash
+              name: rook-ceph-crash
+            - mountPath: /dev
+              name: devices
+            - mountPath: /run/udev
+              name: udev
+            - mountPath: /rook
+              name: rook-binaries
+            - mountPath: /rootfs
+              name: rootfs
+              readOnly: true
             - mountPath: /etc/ceph
               name: ceph-config
             - name: mon-endpoint-volume
@@ -52,6 +68,34 @@ spec:
                 path: mon-endpoints
         - name: ceph-config
           emptyDir: {}
+        - hostPath:
+            path: /var/lib/rook
+            type: ""
+          name: rook-data
+        - emptyDir: {}
+          name: ceph-conf-emptydir
+        - hostPath:
+            path: /var/lib/rook/rook-ceph/log
+            type: ""
+          name: rook-ceph-log
+        - hostPath:
+            path: /var/lib/rook/rook-ceph/crash
+            type: ""
+          name: rook-ceph-crash
+        - emptyDir: {}
+          name: rook-binaries
+        - hostPath:
+            path: /dev
+            type: ""
+          name: devices
+        - hostPath:
+            path: /run/udev
+            type: ""
+          name: udev
+        - hostPath:
+            path: /
+            type: ""
+          name: rootfs
       tolerations:
         - key: "node.kubernetes.io/unreachable"
           operator: "Exists"
