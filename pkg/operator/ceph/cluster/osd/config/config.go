@@ -39,7 +39,7 @@ type StoreConfig struct {
 	DatabaseSizeMB  int    `json:"databaseSizeMB,omitempty"`
 	OSDsPerDevice   int    `json:"osdsPerDevice,omitempty"`
 	EncryptedDevice bool   `json:"encryptedDevice,omitempty"`
-	MetadataDevice  string `json:"metadataDevice,omitempty"`
+	MetadataDevice  string `json:"metadataDevice,omitempty"` // 元数据设备
 	DeviceClass     string `json:"deviceClass,omitempty"`
 	InitialWeight   string `json:"initialWeight,omitempty"`
 	PrimaryAffinity string `json:"primaryAffinity,omitempty"`
@@ -53,6 +53,7 @@ func NewStoreConfig() StoreConfig {
 }
 
 // ToStoreConfig converts a config string-string map to a StoreConfig.
+// 设置每个盘的 wal， database size，以及 metadata device 等。
 func ToStoreConfig(config map[string]string) StoreConfig {
 	storeConfig := NewStoreConfig()
 	for k, v := range config {

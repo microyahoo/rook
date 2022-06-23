@@ -404,11 +404,11 @@ func getAvailableDevices(context *clusterd.Context, agent *OsdAgent) (*DeviceOsd
 							break
 						}
 					}
-				} else if device.Name == desiredDevice.Name {
+				} else if device.Name == desiredDevice.Name { // 盘符号匹配上
 					logger.Infof("%q found in the desired devices", device.Name)
 					matched = true
 				} else if strings.HasPrefix(desiredDevice.Name, "/dev/") {
-					devLinks := strings.Split(device.DevLinks, " ")
+					devLinks := strings.Split(device.DevLinks, " ") // 匹配到 dev links
 					for _, link := range devLinks {
 						if link == desiredDevice.Name {
 							logger.Infof("%q found in the desired devices (matched by link: %q)", device.Name, link)

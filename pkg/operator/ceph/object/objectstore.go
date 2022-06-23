@@ -180,6 +180,7 @@ func deleteSingleSiteRealmAndPools(objContext *Context, spec cephv1.ObjectStoreS
 		lastStore = true
 	}
 
+	// 删除 pool
 	if !spec.PreservePoolsOnDelete {
 		err = deletePools(objContext, spec, lastStore)
 		if err != nil {
@@ -709,6 +710,7 @@ func missingPools(context *Context) ([]string, error) {
 	return missingPools, nil
 }
 
+// 创建 object store 存储池
 func CreatePools(context *Context, clusterSpec *cephv1.ClusterSpec, metadataPool, dataPool cephv1.PoolSpec) error {
 	if emptyPool(dataPool) && emptyPool(metadataPool) {
 		logger.Info("no pools specified for the CR, checking for their existence...")

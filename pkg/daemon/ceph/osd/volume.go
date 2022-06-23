@@ -648,8 +648,31 @@ func (a *OsdAgent) initializeDevicesLVMMode(context *clusterd.Context, devices *
 				// the device will be configured as a batch at the end of the method
 				md := a.metadataDevice
 				if device.Config.MetadataDevice != "" {
-					md = device.Config.MetadataDevice
+					md = device.Config.MetadataDevice // 设置 metadata device
 				}
+				var metadataDevice *sys.LocalDisk
+			OUTER:
+				for _, localDevice := range context.Devices {
+					if localDevice.Name == md { // 盘符号匹配上
+						logger.Infof("%s found in the desired metadata devices", localDevice.Name)
+						metadataDevice = localDevice
+						break
+					} else if strings.HasPrefix(md, "/dev/") {
+						devLinks := strings.Split(localDevice.DevLinks, " ") // 匹配到 dev links
+						for _, link := range devLinks {
+							if link == md {
+								logger.Infof("%s found in the desired metatdata device (matched by link: %s)", localDevice.Name, link)
+								metadataDevice = localDevice
+								break OUTER
+							}
+						}
+					}
+				}
+				if metadataDevice == nil {
+					return errors.Errorf("metadata device %s is not found", md)
+				}
+				md = metadataDevice.Name
+
 				logger.Infof("using %s as metadataDevice for device %s and let ceph-volume lvm batch decide how to create volumes", md, deviceArg)
 				if _, ok := metadataDevices[md]; ok {
 					// Fail when two devices using the same metadata device have different values for osdsPerDevice
@@ -750,7 +773,7 @@ func (a *OsdAgent) initializeDevicesLVMMode(context *clusterd.Context, devices *
 		}
 
 		mdArgs = append(mdArgs, []string{
-			dbDeviceFlag,
+			dbDeviceFlag, // 设置 db-devices 参数
 			mdPath,
 		}...)
 
@@ -759,6 +782,7 @@ func (a *OsdAgent) initializeDevicesLVMMode(context *clusterd.Context, devices *
 			"--report",
 		}...)
 
+		// 执行命令
 		if err := context.Executor.ExecuteCommand(baseCommand, reportArgs...); err != nil {
 			return errors.Wrap(err, "failed ceph-volume report") // fail return here as validation provided by ceph-volume
 		}

@@ -1,14 +1,25 @@
 #! /bin/bash
 
-hosts="
-    glusterfs-1.deeproute.ai
-    glusterfs-2.deeproute.ai
-    glusterfs-3.deeproute.ai
-"
-disk="/dev/vdb"
+# hosts="
+#     glusterfs-1.deeproute.ai
+#     glusterfs-2.deeproute.ai
+#     glusterfs-3.deeproute.ai
+# "
 
-for h in $hosts; do \
-    ssh $h "rm -rf /dev/ceph-*; rm -rf /var/lib/rook*; rm -rf /dev/mapper/ceph--*; dmsetup ls | grep ceph | cut -f1 | xargs dmsetup remove; wipefs -a -f $disk;"
+hosts="
+    k1
+    k2
+    k3
+"
+disks="
+    /dev/vdb
+    /dev/vdc
+"
+
+for disk in $disks; do \
+    for h in $hosts; do \
+        ssh $h "rm -rf /dev/ceph-*; rm -rf /var/lib/rook*; rm -rf /dev/mapper/ceph--*; dmsetup ls | grep ceph | cut -f1 | xargs dmsetup remove; wipefs -a -f $disk;"
+    done
 done
 
 

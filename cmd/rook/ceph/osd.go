@@ -318,6 +318,7 @@ func getLocation(ctx context.Context, clientset kubernetes.Interface) (string, s
 }
 
 // Parse the devices, which are sent as a JSON-marshalled list of device IDs with a StorageConfig spec
+// 解析 devices
 func parseDevices(devices string) ([]osddaemon.DesiredDevice, error) {
 	if devices == "" {
 		return []osddaemon.DesiredDevice{}, nil

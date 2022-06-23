@@ -99,7 +99,7 @@ type OSDInfo struct {
 	DeviceClass    string `json:"device-class"`
 	// BlockPath is the logical Volume path for an OSD created by Ceph-volume with format '/dev/<Volume Group>/<Logical Volume>' or simply /dev/vdb if block mode is used
 	BlockPath     string `json:"lv-path"`
-	MetadataPath  string `json:"metadata-path"`
+	MetadataPath  string `json:"metadata-path"` // osd metadata device
 	WalPath       string `json:"wal-path"`
 	SkipLVRelease bool   `json:"skip-lv-release"`
 	Location      string `json:"location"`
@@ -128,10 +128,10 @@ type osdProperties struct {
 	pvcSize             string
 	selection           cephv1.Selection
 	resources           corev1.ResourceRequirements
-	storeConfig         osdconfig.StoreConfig
+	storeConfig         osdconfig.StoreConfig // 设置每个盘的 wal， database size，以及 metadata device 等
 	placement           cephv1.Placement
 	preparePlacement    *cephv1.Placement
-	metadataDevice      string
+	metadataDevice      string // metadata device
 	portable            bool
 	tuneSlowDeviceClass bool
 	tuneFastDeviceClass bool

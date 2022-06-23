@@ -230,7 +230,7 @@ func checkForImagesInPool(context *clusterd.Context, clusterInfo *ClusterInfo, n
 	return errors.Errorf("pool %q contains images/snapshosts", name)
 }
 
-// DeletePool purges a pool from Ceph
+// DeletePool purges a pool from Ceph 删除存储池
 func DeletePool(context *clusterd.Context, clusterInfo *ClusterInfo, name string) error {
 	// check if the pool exists
 	pool, err := GetPoolDetails(context, clusterInfo, name)

@@ -343,6 +343,7 @@ func (r *ReconcileCephObjectStore) reconcile(request reconcile.Request) (reconci
 	return reconcile.Result{}, cephObjectStore, nil
 }
 
+// 创建 object store
 func (r *ReconcileCephObjectStore) reconcileCreateObjectStore(cephObjectStore *cephv1.CephObjectStore, namespacedName types.NamespacedName, cluster cephv1.ClusterSpec) (reconcile.Result, error) {
 	ownerInfo := k8sutil.NewOwnerInfo(cephObjectStore, r.scheme)
 	cfg := clusterConfig{

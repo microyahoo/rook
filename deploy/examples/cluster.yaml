@@ -141,30 +141,16 @@ spec:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
           - matchExpressions:
-            - key: ceph-mon
-              operator: In
-              values:
-              - enabled
- 
     osd:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
           - matchExpressions:
-            - key: ceph-osd
-              operator: In
-              values:
-              - enabled
- 
     mgr:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
           - matchExpressions:
-            - key: ceph-mgr
-              operator: In
-              values:
-              - enabled
 # placement:
 #    all:
 #      nodeAffinity:
