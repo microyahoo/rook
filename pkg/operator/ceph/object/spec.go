@@ -515,7 +515,7 @@ func (c *clusterConfig) reconcileService(cephObjectStore *cephv1.CephObjectStore
 	// Set owner ref to the parent object
 	err := c.ownerInfo.SetControllerReference(service)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to set owner reference to ceph object store service %q", service.Name)
+		return errors.Wrapf(err, "failed to set owner reference to ceph object store service %q", service.Name)
 	}
 
 	svc, err := k8sutil.CreateOrUpdateService(c.clusterInfo.Context, c.context.Clientset, cephObjectStore.Namespace, service)
@@ -525,7 +525,7 @@ func (c *clusterConfig) reconcileService(cephObjectStore *cephv1.CephObjectStore
 
 	logger.Infof("ceph object store gateway service running at %s", svc.Spec.ClusterIP)
 
-	return svc.Spec.ClusterIP, nil
+	return nil
 }
 
 func (c *clusterConfig) vaultPrefixRGW() string {
