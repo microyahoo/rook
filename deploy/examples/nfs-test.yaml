@@ -4,10 +4,10 @@ metadata:
   name: my-nfs
   namespace: rook-ceph # namespace:cluster
 spec:
-  # this setting is ignored for Ceph v16+
-  rados:
-    pool: myfs-replicated
-    namespace: nfs-ns
+  # # this setting is ignored for Ceph v16+
+  # rados:
+  #   pool: myfs-replicated
+  #   namespace: nfs-ns
   # Settings for the NFS server
   server:
     # the number of active NFS servers
@@ -24,5 +24,6 @@ spec:
   name: .nfs
   failureDomain: host
   replicated:
-    size: 1
+    size: 3
     requireSafeReplicaSize: false
+  crushRoot: root-a83238d5-976c-4b5c-817f-e527bb9f5840

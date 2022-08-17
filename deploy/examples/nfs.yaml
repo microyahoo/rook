@@ -11,14 +11,14 @@ metadata:
   namespace: rook-ceph # namespace:cluster
 spec:
   # For Ceph v15, the rados block is required. It is ignored for Ceph v16.
-  rados:
-    # RADOS pool where NFS configs are stored.
-    # In this example the data pool for the "myfs" filesystem is used.
-    # If using the object store example, the data pool would be "my-store.rgw.buckets.data".
-    # Note that this has nothing to do with where exported file systems or object stores live.
-    pool: myfs-replicated
-    # RADOS namespace where NFS client recovery data is stored in the pool.
-    namespace: nfs-ns
+  # rados:
+  #   # RADOS pool where NFS configs are stored.
+  #   # In this example the data pool for the "myfs" filesystem is used.
+  #   # If using the object store example, the data pool would be "my-store.rgw.buckets.data".
+  #   # Note that this has nothing to do with where exported file systems or object stores live.
+  #   pool: myfs-replicated
+  #   # RADOS namespace where NFS client recovery data is stored in the pool.
+  #   namespace: nfs-ns
 
   # Settings for the NFS server
   server:
@@ -66,6 +66,7 @@ spec:
   # the pool name created in Ceph with this name property
   name: .nfs
   failureDomain: host
+  crushRoot: root-a83238d5-976c-4b5c-817f-e527bb9f5840
   replicated:
     size: 3
     requireSafeReplicaSize: true
