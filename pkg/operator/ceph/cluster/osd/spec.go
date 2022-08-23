@@ -370,7 +370,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 			"--cluster", "ceph",
 			"--setuser", "ceph",
 			"--setgroup", "ceph",
-			fmt.Sprintf("--crush-location=%s", osd.Location),
+			// fmt.Sprintf("--crush-location=%s", osd.Location),
 		}
 		osd.LVBackedPV = true
 	} else if osdProps.onPVC() && osd.CVMode == "raw" {
@@ -383,7 +383,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 			"--fsid", c.clusterInfo.FSID,
 			"--setuser", "ceph",
 			"--setgroup", "ceph",
-			fmt.Sprintf("--crush-location=%s", osd.Location),
+			// fmt.Sprintf("--crush-location=%s", osd.Location),
 		}
 	} else {
 		doBinaryCopyInit = false
@@ -395,7 +395,7 @@ func (c *Cluster) makeDeployment(osdProps osdProperties, osd OSDInfo, provisionC
 			"--fsid", c.clusterInfo.FSID,
 			"--setuser", "ceph",
 			"--setgroup", "ceph",
-			fmt.Sprintf("--crush-location=%s", osd.Location),
+			// fmt.Sprintf("--crush-location=%s", osd.Location), // crush location
 		}
 	}
 

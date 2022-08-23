@@ -587,7 +587,7 @@ const (
 	// DefaultFailureDomain for PoolSpec
 	DefaultFailureDomain = "host"
 	// DefaultCRUSHRoot is the default name of the CRUSH root bucket
-	DefaultCRUSHRoot = "default"
+	DefaultCRUSHRoot = "default" // default crush root
 )
 
 // PoolSpec represents the spec of ceph pool

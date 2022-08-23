@@ -524,7 +524,7 @@ func (c *Cluster) getOSDInfo(d *appsv1.Deployment) (OSDInfo, error) {
 
 	locationFound := false
 	for _, a := range container.Args {
-		locationPrefix := "--crush-location="
+		locationPrefix := "--crush-location=" // crush location
 		if strings.HasPrefix(a, locationPrefix) {
 			locationFound = true
 			// Extract the same CRUSH location as originally determined by the OSD prepare pod
@@ -532,6 +532,7 @@ func (c *Cluster) getOSDInfo(d *appsv1.Deployment) (OSDInfo, error) {
 			osd.Location = a[len(locationPrefix):]
 		}
 	}
+	logger.Infof("***osd location: %s, location found: %t", osd.Location, locationFound)
 
 	if !locationFound {
 		location, _, err := getLocationFromPod(c.clusterInfo.Context, c.context.Clientset, d, cephclient.GetCrushRootFromSpec(&c.spec))
@@ -540,6 +541,7 @@ func (c *Cluster) getOSDInfo(d *appsv1.Deployment) (OSDInfo, error) {
 		} else {
 			osd.Location = location
 		}
+		logger.Infof("***get osd location from pod: %s, location found: %t", osd.Location, locationFound)
 	}
 
 	if osd.UUID == "" || osd.BlockPath == "" {
