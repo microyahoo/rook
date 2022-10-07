@@ -1312,10 +1312,10 @@ type ObjectStoreSpec struct {
 	// +nullable
 	Zone ZoneSpec `json:"zone,omitempty"`
 
-	// The rgw Bucket healthchecks and liveness probe
+	// The RGW health probes
 	// +optional
 	// +nullable
-	HealthCheck BucketHealthCheckSpec `json:"healthCheck,omitempty"`
+	HealthCheck ObjectHealthCheckSpec `json:"healthCheck,omitempty"`
 
 	// Security represents security settings
 	// +optional
@@ -1329,10 +1329,8 @@ type ObjectStoreSpec struct {
 	HostNetwork *bool `json:"hostNetwork,omitempty"`
 }
 
-// BucketHealthCheckSpec represents the health check of an object store
-type BucketHealthCheckSpec struct {
-	// +optional
-	Bucket HealthCheckSpec `json:"bucket,omitempty"`
+// ObjectHealthCheckSpec represents the health check of an object store
+type ObjectHealthCheckSpec struct {
 	// +optional
 	LivenessProbe *ProbeSpec `json:"livenessProbe,omitempty"`
 	// +optional
@@ -1446,8 +1444,6 @@ type ObjectStoreStatus struct {
 	// +optional
 	Message string `json:"message,omitempty"`
 	// +optional
-	BucketStatus *BucketStatus `json:"bucketStatus,omitempty"`
-	// +optional
 	Endpoints ObjectEndpoints `json:"endpoints"`
 	// +optional
 	// +nullable
@@ -1456,18 +1452,6 @@ type ObjectStoreStatus struct {
 	// ObservedGeneration is the latest generation observed by the controller.
 	// +optional
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
-}
-
-// BucketStatus represents the status of a bucket
-type BucketStatus struct {
-	// +optional
-	Health ConditionType `json:"health,omitempty"`
-	// +optional
-	Details string `json:"details,omitempty"`
-	// +optional
-	LastChecked string `json:"lastChecked,omitempty"`
-	// +optional
-	LastChanged string `json:"lastChanged,omitempty"`
 }
 
 type ObjectEndpoints struct {

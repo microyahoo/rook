@@ -27,7 +27,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const bucketDependentType = "buckets in the object store (could be from ObjectBucketClaims or COSI Buckets)"
+const (
+	bucketDependentType                = "buckets in the object store (could be from ObjectBucketClaims or COSI Buckets)"
+	zoneIsMasterWithPeersDependentType = "zone is master and has peers"
+	s3HealthCheckBucketName            = "rook-ceph-bucket-checker"
+)
 
 // CephObjectStoreDependents returns the buckets which exist in the object store that should block
 // deletion.
@@ -96,13 +100,41 @@ func getBucketDependents(
 	if err != nil {
 		return errors.Wrapf(err, "failed to list buckets in CephObjectStore %q", nsName)
 	}
-	healthCheckBucket := genHealthCheckerBucketName(string(store.UID))
 	for _, b := range buckets {
-		if b == healthCheckBucket {
-			continue // don't include the health checker bucket as a blocking dependent
-		}
 		deps.Add(bucketDependentType, b)
 	}
 
 	return nil
+}
+
+func getMasterZoneDependents(
+	deps *dependents.DependentList,
+	clusterdCtx *clusterd.Context,
+	clusterInfo *client.ClusterInfo,
+	store *v1.CephObjectStore,
+	objContext *Context,
+) error {
+	realmArg := fmt.Sprintf("--rgw-realm=%s", objContext.Realm)
+	zoneGroupArg := fmt.Sprintf("--rgw-zonegroup=%s", objContext.ZoneGroup)
+	zoneGroupOutput, err := RunAdminCommandNoMultisite(objContext, true, "zonegroup", "get", realmArg, zoneGroupArg)
+	if err != nil {
+		return errors.Wrapf(err, "failed to fetch zonegroup %q", objContext.ZoneGroup)
+	}
+	zoneGroupJson, err := DecodeZoneGroupConfig(zoneGroupOutput)
+	if err != nil {
+		return errors.Wrapf(err, "failed to decode zonegroup %q", objContext.ZoneGroup)
+	}
+	// if only master zone remains then it is okay delete
+	if len(zoneGroupJson.Zones) > 1 {
+		for _, zone := range zoneGroupJson.Zones {
+			if zone.Name != store.Spec.Zone.Name {
+				deps.Add(zoneIsMasterWithPeersDependentType, zone.Name)
+			}
+		}
+	}
+	return nil
+}
+
+func genHealthCheckerBucketName(uuid string) string {
+	return fmt.Sprintf("%s-%s", s3HealthCheckBucketName, uuid)
 }
