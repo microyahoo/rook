@@ -109,3 +109,12 @@ func (s *ObjectStoreSpec) GetServiceServingCert() string {
 func (c *CephObjectStore) GetStatusConditions() *[]Condition {
 	return &c.Status.Conditions
 }
+
+// String returns an addressable string representation of the EndpointAddress.
+func (e *EndpointAddress) String() string {
+	// hostname is easier to read, and it is probably less likely to change, so prefer it over IP
+	if e.Hostname != "" {
+		return e.Hostname
+	}
+	return e.IP
+}
