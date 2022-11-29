@@ -1553,6 +1553,12 @@ type ObjectStoreUserSpec struct {
 	// +optional
 	// +nullable
 	Quotas *ObjectUserQuotaSpec `json:"quotas,omitempty"`
+	// +optional
+	// +nullable
+	AccessKey string `json:"accessKey,omitempty"`
+	// +optional
+	// +nullable
+	SecretKey string `json:"secretKey,omitempty"`
 }
 
 // Additional admin-level capabilities for the Ceph object store user
