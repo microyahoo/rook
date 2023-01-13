@@ -165,7 +165,7 @@ func IsReadyToReconcile(ctx context.Context, c client.Client, namespacedName typ
 
 	// read the CR status of the cluster
 	if cephCluster.Status.CephStatus != nil {
-		var operatorDeploymentOk = cephCluster.Status.CephStatus.Health == "HEALTH_OK" || cephCluster.Status.CephStatus.Health == "HEALTH_WARN"
+		var operatorDeploymentOk = cephCluster.Status.CephStatus.Health == "HEALTH_OK" || cephCluster.Status.CephStatus.Health == "HEALTH_WARN" // check ceph status
 
 		if operatorDeploymentOk || canIgnoreHealthErrStatusInReconcile(cephCluster, controllerName) {
 			logger.Debugf("%q: ceph status is %q, operator is ready to run ceph command, reconciling", controllerName, cephCluster.Status.CephStatus.Health)

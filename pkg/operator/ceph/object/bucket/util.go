@@ -69,7 +69,7 @@ func isStaticBucket(sc *storagev1.StorageClass) (string, bool) {
 }
 
 func getCephUser(ob *bktv1alpha1.ObjectBucket) string {
-	return ob.Spec.AdditionalState[CephUser]
+	return ob.Spec.AdditionalState[CephUser] // additionalState:  cephUser: ceph-user-2mZw9gfQ
 }
 
 func (p *Provisioner) getObjectStore() (*cephv1.CephObjectStore, error) {
@@ -96,6 +96,10 @@ func (p *Provisioner) getCephCluster() (*cephv1.CephCluster, error) {
 
 	// This is a bit weak, but there will always be a single cluster per namespace anyway
 	return &cephCluster.Items[0], err
+}
+
+func UserID(AdditionalConfig map[string]string) string {
+	return AdditionalConfig["userID"]
 }
 
 func MaxObjectQuota(AdditionalConfig map[string]string) string {

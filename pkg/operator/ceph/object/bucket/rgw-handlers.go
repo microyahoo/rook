@@ -16,15 +16,15 @@ func (p *Provisioner) bucketExists(name string) (bool, error) {
 	return true, nil
 }
 
-// Create a Ceph user based on the passed-in name or a generated name. Return the
+// Get a Ceph user based on the passed-in name or a generated name. Return the
 // accessKeys and set user name and keys in receiver.
-func (p *Provisioner) createCephUser(username string) (accKey string, secKey string, err error) {
+func (p *Provisioner) getCephUser(username string) (accKey string, secKey string, err error) {
 	if len(username) == 0 {
 		return "", "", errors.Wrap(err, "no user name provided")
 	}
 	p.cephUserName = username
 
-	logger.Infof("creating Ceph user %q", username)
+	logger.Infof("getting Ceph os user %q", username)
 	userConfig := admin.User{
 		ID:          username,
 		DisplayName: p.cephUserName,
@@ -34,16 +34,17 @@ func (p *Provisioner) createCephUser(username string) (accKey string, secKey str
 	u, err = p.adminOpsClient.GetUser(p.clusterInfo.Context, userConfig)
 	if err != nil {
 		if errors.Is(err, admin.ErrNoSuchUser) {
-			u, err = p.adminOpsClient.CreateUser(p.clusterInfo.Context, userConfig)
-			if err != nil {
-				return "", "", errors.Wrapf(err, "failed to create ceph object user %v", userConfig.ID)
-			}
+			return "", "", errors.Errorf("No such os user: %s", username)
+			// u, err = p.adminOpsClient.CreateUser(p.clusterInfo.Context, userConfig)
+			// if err != nil {
+			// 	return "", "", errors.Wrapf(err, "failed to create ceph object user %v", userConfig.ID)
+			// }
 		} else {
 			return "", "", errors.Wrapf(err, "failed to get ceph user %q", username)
 		}
 	}
 
-	logger.Infof("successfully created Ceph user %q with access keys", username)
+	logger.Infof("successfully get Ceph user %q with access keys", username)
 	return u.Keys[0].AccessKey, u.Keys[0].SecretKey, nil
 }
 
@@ -83,16 +84,16 @@ func (p *Provisioner) deleteOBCResource(bucketName string) error {
 			return errors.Wrapf(err, "failed to delete bucket %q", bucketName)
 		}
 	}
-	if len(p.cephUserName) > 0 {
-		err := p.adminOpsClient.RemoveUser(p.clusterInfo.Context, admin.User{ID: p.cephUserName})
-		if err != nil {
-			if errors.Is(err, admin.ErrNoSuchUser) {
-				logger.Warningf("user %q does not exist, nothing to delete. %v", p.cephUserName, err)
-			}
-			logger.Warningf("failed to delete user %q. %v", p.cephUserName, err)
-		} else {
-			logger.Infof("user %q successfully deleted", p.cephUserName)
-		}
-	}
+	// if len(p.cephUserName) > 0 { // TODO
+	// 	err := p.adminOpsClient.RemoveUser(p.clusterInfo.Context, admin.User{ID: p.cephUserName})
+	// 	if err != nil {
+	// 		if errors.Is(err, admin.ErrNoSuchUser) {
+	// 			logger.Warningf("user %q does not exist, nothing to delete. %v", p.cephUserName, err)
+	// 		}
+	// 		logger.Warningf("failed to delete user %q. %v", p.cephUserName, err)
+	// 	} else {
+	// 		logger.Infof("user %q successfully deleted", p.cephUserName)
+	// 	}
+	// }
 	return nil
 }
