@@ -98,6 +98,7 @@ func CreateOrLoadClusterInfo(clusterdContext *clusterd.Context, context context.
 		Schedule: map[string]*MonScheduleInfo{},
 	}
 
+	// 从 rook-ceph-mon secret 中读取 data 信息
 	secrets, err := clusterdContext.Clientset.CoreV1().Secrets(namespace).Get(context, AppName, metav1.GetOptions{})
 	if err != nil {
 		if !kerrors.IsNotFound(err) {

@@ -111,7 +111,7 @@ var AddToManagerFuncs = []func(manager.Manager, *clusterd.Context, context.Conte
 	mirror.Add,
 	Add,
 	csi.Add,
-	bucket.Add,
+	bucket.Add, // cr manager
 	topic.Add,
 	notification.Add,
 	subvolumegroup.Add,

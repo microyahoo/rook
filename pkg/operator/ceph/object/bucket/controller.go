@@ -104,6 +104,7 @@ func (r *ReconcileBucket) Reconcile(context context.Context, request reconcile.R
 	return reconcileResponse, err
 }
 
+// bucket reconcile
 func (r *ReconcileBucket) reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// See if there is a CephCluster
 	cephCluster := &cephv1.CephCluster{}
@@ -143,7 +144,7 @@ func (r *ReconcileBucket) reconcile(request reconcile.Request) (reconcile.Result
 		}
 	} else {
 		// Populate the operator's config
-		r.opConfig.Parameters = opConfig.Data
+		r.opConfig.Parameters = opConfig.Data // 从 rook-ceph-operator-config configmap 中读取 data 信息
 	}
 
 	// Populate clusterInfo during each reconcile

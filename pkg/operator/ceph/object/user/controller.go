@@ -221,6 +221,7 @@ func (r *ReconcileObjectStoreUser) reconcile(request reconcile.Request) (reconci
 		logger.Debugf("deleting pool %q", cephObjectStoreUser.Name)
 		r.recorder.Eventf(cephObjectStoreUser, v1.EventTypeNormal, string(cephv1.ReconcileStarted), "deleting CephObjectStoreUser %q", cephObjectStoreUser.Name)
 
+		// TODO: check whether buckets exist
 		err := r.deleteUser(cephObjectStoreUser)
 		if err != nil {
 			return reconcile.Result{}, *cephObjectStoreUser, errors.Wrapf(err, "failed to delete ceph object user %q", cephObjectStoreUser.Name)
@@ -245,7 +246,7 @@ func (r *ReconcileObjectStoreUser) reconcile(request reconcile.Request) (reconci
 	}
 
 	// CREATE/UPDATE CEPH USER
-	reconcileResponse, err = r.reconcileCephUser(cephObjectStoreUser)
+	reconcileResponse, err = r.reconcileCephUser(cephObjectStoreUser) // create or update ceph user
 	if err != nil {
 		r.updateStatus(k8sutil.ObservedGenerationNotAvailable, request.NamespacedName, k8sutil.ReconcileFailedStatus)
 		return reconcileResponse, *cephObjectStoreUser, err
@@ -339,7 +340,7 @@ func (r *ReconcileObjectStoreUser) createOrUpdateCephUser(u *cephv1.CephObjectSt
 		MaxSize:    &maxSize,
 		MaxObjects: &maxObjects,
 	}
-	err = r.objContext.AdminOpsClient.SetUserQuota(r.opManagerContext, userQuota)
+	err = r.objContext.AdminOpsClient.SetUserQuota(r.opManagerContext, userQuota) // set user quota
 	if err != nil {
 		return errors.Wrapf(err, "failed to set quotas for user %q", u.Name)
 	}
@@ -348,7 +349,7 @@ func (r *ReconcileObjectStoreUser) createOrUpdateCephUser(u *cephv1.CephObjectSt
 	if r.userConfig.Keys == nil {
 		r.userConfig.Keys = make([]admin.UserKeySpec, 1)
 	}
-	r.userConfig.Keys[0].AccessKey = user.Keys[0].AccessKey
+	r.userConfig.Keys[0].AccessKey = user.Keys[0].AccessKey // TODO: other keys?
 	r.userConfig.Keys[0].SecretKey = user.Keys[0].SecretKey
 	logger.Info(logCreateOrUpdate)
 
@@ -559,7 +560,14 @@ func (r *ReconcileObjectStoreUser) getRgwPodList(cephObjectStoreUser *cephv1.Cep
 
 // Delete the user
 func (r *ReconcileObjectStoreUser) deleteUser(u *cephv1.CephObjectStoreUser) error {
-	err := r.objContext.AdminOpsClient.RemoveUser(r.opManagerContext, admin.User{ID: u.Name})
+	buckets, err := r.objContext.AdminOpsClient.ListUsersBuckets(r.opManagerContext, u.Name)
+	if err != nil {
+		return errors.Wrapf(err, "failed to list ceph object user buckets of user %q.", u.Name)
+	}
+	if len(buckets) > 0 {
+		return errors.Errorf("There exists buckets %v for object user %s", u.Name, buckets)
+	}
+	err = r.objContext.AdminOpsClient.RemoveUser(r.opManagerContext, admin.User{ID: u.Name})
 	if err != nil {
 		if errors.Is(err, admin.ErrNoSuchUser) {
 			logger.Warningf("user %q does not exist, nothing to remove", u.Name)

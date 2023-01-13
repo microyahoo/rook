@@ -183,7 +183,7 @@ var getAllRGWNotifications = func(p provisioner, ob *bktv1alpha1.ObjectBucket) (
 		Bucket:              &bucketName,
 		ExpectedBucketOwner: &ownerName,
 	})
-	if err != nil {
+	if err != nil { //TODO(zhengliang): confirm
 		return nil, errors.Wrapf(err, "failed to get BucketNotification from bucket %q", bucketName)
 	}
 
