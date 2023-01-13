@@ -72,7 +72,7 @@ func isStaticBucket(sc *storagev1.StorageClass) (string, bool) {
 }
 
 func getCephUser(ob *bktv1alpha1.ObjectBucket) string {
-	return ob.Spec.AdditionalState[CephUser]
+	return ob.Spec.AdditionalState[CephUser] // additionalState:  cephUser: ceph-user-2mZw9gfQ
 }
 
 func (p *Provisioner) getObjectStore() (*cephv1.CephObjectStore, error) {
@@ -101,8 +101,19 @@ func (p *Provisioner) getCephCluster() (*cephv1.CephCluster, error) {
 	return &cephCluster.Items[0], err
 }
 
-func randomString(n int) string {
+func UserID(AdditionalConfig map[string]string) string {
+	return AdditionalConfig["userID"]
+}
 
+func MaxObjectQuota(AdditionalConfig map[string]string) string {
+	return AdditionalConfig["maxObjects"]
+}
+
+func MaxSizeQuota(AdditionalConfig map[string]string) string {
+	return AdditionalConfig["maxSize"]
+}
+
+func randomString(n int) string {
 	var letterRunes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
@@ -112,12 +123,4 @@ func randomString(n int) string {
 		b[k] = letterRunes[v%byte(len(letterRunes))]
 	}
 	return string(b)
-}
-
-func MaxObjectQuota(AdditionalConfig map[string]string) string {
-	return AdditionalConfig["maxObjects"]
-}
-
-func MaxSizeQuota(AdditionalConfig map[string]string) string {
-	return AdditionalConfig["maxSize"]
 }
