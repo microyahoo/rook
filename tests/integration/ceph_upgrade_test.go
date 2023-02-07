@@ -113,13 +113,13 @@ func (s *UpgradeSuite) testUpgrade(useHelm bool, initialCephVersion v1.CephVersi
 	clusterInfo := client.AdminTestClusterInfo(s.namespace)
 	requireBlockImagesRemoved := false
 	defer func() {
-		blockTestDataCleanUp(s.helper, s.k8sh, s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
-		cleanupFilesystemConsumer(s.helper, s.k8sh, s.Suite, s.namespace, filePodName)
-		cleanupFilesystem(s.helper, s.k8sh, s.Suite, s.namespace, installer.FilesystemName)
+		blockTestDataCleanUp(s.helper, s.k8sh, &s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
+		cleanupFilesystemConsumer(s.helper, s.k8sh, &s.Suite, s.namespace, filePodName)
+		cleanupFilesystem(s.helper, s.k8sh, &s.Suite, s.namespace, installer.FilesystemName)
 		_ = s.helper.ObjectUserClient.Delete(s.namespace, objectUserID)
 		_ = s.helper.BucketClient.DeleteObc(obcName, installer.ObjectStoreSCName, bucketPrefix, maxObject, false)
 		_ = s.helper.BucketClient.DeleteBucketStorageClass(s.namespace, installer.ObjectStoreName, installer.ObjectStoreSCName, "Delete")
-		objectStoreCleanUp(s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
+		objectStoreCleanUp(&s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
 	}()
 
 	// Delete Object-SC before upgrade test (https://github.com/rook/rook/issues/10153)
@@ -143,7 +143,7 @@ func (s *UpgradeSuite) testUpgrade(useHelm bool, initialCephVersion v1.CephVersi
 	rbdFilesToRead = append(rbdFilesToRead, newFile)
 	cephfsFilesToRead = append(cephfsFilesToRead, newFile)
 
-	checkCephObjectUser(s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
+	checkCephObjectUser(&s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
 
 	// should be Bound after upgrade to Rook master
 	// do not need retry b/c the OBC controller runs parallel to Rook-Ceph orchestration
@@ -181,7 +181,7 @@ func (s *UpgradeSuite) testUpgrade(useHelm bool, initialCephVersion v1.CephVersi
 	s.verifyFilesAfterUpgrade(newFile, rbdFilesToRead, cephfsFilesToRead)
 	logger.Infof("Verified upgrade from pacific to quincy")
 
-	checkCephObjectUser(s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
+	checkCephObjectUser(&s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
 }
 
 func (s *UpgradeSuite) TestUpgradeCephToOctopusDevel() {
@@ -194,13 +194,13 @@ func (s *UpgradeSuite) TestUpgradeCephToOctopusDevel() {
 	clusterInfo := client.AdminTestClusterInfo(s.namespace)
 	requireBlockImagesRemoved := false
 	defer func() {
-		blockTestDataCleanUp(s.helper, s.k8sh, s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
-		cleanupFilesystemConsumer(s.helper, s.k8sh, s.Suite, s.namespace, filePodName)
-		cleanupFilesystem(s.helper, s.k8sh, s.Suite, s.namespace, installer.FilesystemName)
+		blockTestDataCleanUp(s.helper, s.k8sh, &s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
+		cleanupFilesystemConsumer(s.helper, s.k8sh, &s.Suite, s.namespace, filePodName)
+		cleanupFilesystem(s.helper, s.k8sh, &s.Suite, s.namespace, installer.FilesystemName)
 		_ = s.helper.ObjectUserClient.Delete(s.namespace, objectUserID)
 		_ = s.helper.BucketClient.DeleteObc(obcName, installer.ObjectStoreSCName, bucketPrefix, maxObject, false)
 		_ = s.helper.BucketClient.DeleteBucketStorageClass(s.namespace, installer.ObjectStoreName, installer.ObjectStoreName, "Delete")
-		objectStoreCleanUp(s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
+		objectStoreCleanUp(&s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
 	}()
 
 	//
@@ -214,7 +214,7 @@ func (s *UpgradeSuite) TestUpgradeCephToOctopusDevel() {
 	s.verifyFilesAfterUpgrade(newFile, rbdFilesToRead, cephfsFilesToRead)
 	logger.Infof("Verified upgrade from octopus stable to octopus devel")
 
-	checkCephObjectUser(s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
+	checkCephObjectUser(&s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
 }
 
 func (s *UpgradeSuite) TestUpgradeCephToPacificDevel() {
@@ -227,13 +227,13 @@ func (s *UpgradeSuite) TestUpgradeCephToPacificDevel() {
 	clusterInfo := client.AdminTestClusterInfo(s.namespace)
 	requireBlockImagesRemoved := false
 	defer func() {
-		blockTestDataCleanUp(s.helper, s.k8sh, s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
-		cleanupFilesystemConsumer(s.helper, s.k8sh, s.Suite, s.namespace, filePodName)
-		cleanupFilesystem(s.helper, s.k8sh, s.Suite, s.namespace, installer.FilesystemName)
+		blockTestDataCleanUp(s.helper, s.k8sh, &s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName, rbdPodName, requireBlockImagesRemoved)
+		cleanupFilesystemConsumer(s.helper, s.k8sh, &s.Suite, s.namespace, filePodName)
+		cleanupFilesystem(s.helper, s.k8sh, &s.Suite, s.namespace, installer.FilesystemName)
 		_ = s.helper.ObjectUserClient.Delete(s.namespace, objectUserID)
 		_ = s.helper.BucketClient.DeleteObc(obcName, installer.ObjectStoreSCName, bucketPrefix, maxObject, false)
 		_ = s.helper.BucketClient.DeleteBucketStorageClass(s.namespace, installer.ObjectStoreName, installer.ObjectStoreSCName, "Delete")
-		objectStoreCleanUp(s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
+		objectStoreCleanUp(&s.Suite, s.helper, s.k8sh, s.settings.Namespace, installer.ObjectStoreName)
 	}()
 
 	//
@@ -247,7 +247,7 @@ func (s *UpgradeSuite) TestUpgradeCephToPacificDevel() {
 	s.verifyFilesAfterUpgrade(newFile, rbdFilesToRead, cephfsFilesToRead)
 	logger.Infof("verified upgrade from pacific stable to pacific devel")
 
-	checkCephObjectUser(s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
+	checkCephObjectUser(&s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, true, false)
 }
 
 func (s *UpgradeSuite) deployClusterforUpgrade(objectUserID, preFilename string) (int, []string, []string) {
@@ -258,23 +258,23 @@ func (s *UpgradeSuite) deployClusterforUpgrade(objectUserID, preFilename string)
 	clusterInfo := client.AdminTestClusterInfo(s.namespace)
 	if !s.settings.UseHelm {
 		logger.Infof("Initializing block before the upgrade")
-		setupBlockLite(s.helper, s.k8sh, s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName)
+		setupBlockLite(s.helper, s.k8sh, &s.Suite, clusterInfo, installer.BlockPoolName, installer.BlockPoolSCName, blockName)
 	} else {
-		createAndWaitForPVC(s.helper, s.k8sh, s.Suite, clusterInfo, installer.BlockPoolSCName, blockName)
+		createAndWaitForPVC(s.helper, s.k8sh, &s.Suite, clusterInfo, installer.BlockPoolSCName, blockName)
 	}
 
-	createPodWithBlock(s.helper, s.k8sh, s.Suite, s.namespace, installer.BlockPoolSCName, rbdPodName, blockName)
+	createPodWithBlock(s.helper, s.k8sh, &s.Suite, s.namespace, installer.BlockPoolSCName, rbdPodName, blockName)
 
 	if !s.settings.UseHelm {
 		// Create the filesystem
 		logger.Infof("Initializing file before the upgrade")
 		activeCount := 1
-		createFilesystem(s.helper, s.k8sh, s.Suite, s.settings, installer.FilesystemName, activeCount)
+		createFilesystem(s.helper, s.k8sh, &s.Suite, s.settings, installer.FilesystemName, activeCount)
 		assert.NoError(s.T(), s.helper.FSClient.CreateStorageClass(installer.FilesystemName, s.settings.OperatorNamespace, s.namespace, installer.FilesystemSCName))
 	}
 
 	// Start the file test client
-	createFilesystemConsumerPod(s.helper, s.k8sh, s.Suite, s.settings, installer.FilesystemName, installer.FilesystemSCName)
+	createFilesystemConsumerPod(s.helper, s.k8sh, &s.Suite, s.settings, installer.FilesystemName, installer.FilesystemSCName)
 
 	if !s.settings.UseHelm {
 		logger.Infof("Initializing object before the upgrade")
@@ -284,7 +284,7 @@ func (s *UpgradeSuite) deployClusterforUpgrade(objectUserID, preFilename string)
 	}
 
 	logger.Infof("Initializing object user before the upgrade")
-	createCephObjectUser(s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, false, false)
+	createCephObjectUser(&s.Suite, s.helper, s.k8sh, s.namespace, installer.ObjectStoreName, objectUserID, false, false)
 
 	logger.Info("Initializing object bucket claim before the upgrade")
 	cobErr := s.helper.BucketClient.CreateBucketStorageClass(s.namespace, installer.ObjectStoreName, installer.ObjectStoreName, "Delete")
