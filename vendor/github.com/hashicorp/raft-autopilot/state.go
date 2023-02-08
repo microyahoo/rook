@@ -27,15 +27,16 @@ func aliveServers(servers map[raft.ServerID]*Server) map[raft.ServerID]*Server {
 // nextStateInputs is the collection of values that can influence
 // creation of the next State.
 type nextStateInputs struct {
-	Now          time.Time
-	StartTime    time.Time
-	Config       *Config
-	RaftConfig   *raft.Configuration
-	KnownServers map[raft.ServerID]*Server
-	LatestIndex  uint64
-	LastTerm     uint64
-	FetchedStats map[raft.ServerID]*ServerStats
-	LeaderID     raft.ServerID
+	Now            time.Time
+	FirstStateTime time.Time
+	Config         *Config
+	RaftConfig     *raft.Configuration
+	KnownServers   map[raft.ServerID]*Server
+	LatestIndex    uint64
+	LastTerm       uint64
+	FetchedStats   map[raft.ServerID]*ServerStats
+	LeaderID       raft.ServerID
+	IsLeader       bool // this will be true when the server running the autopilot code is the leader
 }
 
 // gatherNextStateInputs gathers all the information that would be used to
@@ -52,9 +53,34 @@ type nextStateInputs struct {
 func (a *Autopilot) gatherNextStateInputs(ctx context.Context) (*nextStateInputs, error) {
 	// there are a lot of inputs to computing the next state so they get put into a
 	// struct so that we don't have to return 8 values.
+
+	now := a.time.Now()
+
+	// We need to pull the previous states knowledge of the first time a state was generated.
+	// This is really only important for when autopilot is first started. We will use the
+	// first state's time when determining if a server is stable. Under normal circumstances
+	// we need to just check that the current time - the servers StableSince time is greater
+	// than the configured stabilization time. However while autopilot has been running for
+	// less time than the stabilization time we need to consider all servers as stable
+	// to prevent unnecessary leader elections. Therefore its important to track the first
+	// time a state was generated so we know if we have a state old enough where there is
+	// any chance of seeing servers as stable based off that configured threshold.
+	var firstStateTime time.Time
+	a.stateLock.Lock()
+	if a.state != nil {
+		firstStateTime = a.state.firstStateTime
+	}
+	a.stateLock.Unlock()
+
+	// firstStateTime will be the zero value if we are in the process of generating
+	// the first state. In that case we set it to the now time.
+	if firstStateTime.IsZero() {
+		firstStateTime = now
+	}
+
 	inputs := &nextStateInputs{
-		Now:       a.time.Now(),
-		StartTime: a.startTime,
+		Now:            now,
+		FirstStateTime: firstStateTime,
 	}
 
 	// grab the latest autopilot configuration
@@ -92,9 +118,6 @@ func (a *Autopilot) gatherNextStateInputs(ctx context.Context) (*nextStateInputs
 				break
 			}
 		}
-		if inputs.LeaderID == "" {
-			return nil, fmt.Errorf("cannot detect the current leader server id from its address: %s", leader)
-		}
 	}
 
 	// get the latest Raft index - this should be kept close to the call to
@@ -102,6 +125,10 @@ func (a *Autopilot) gatherNextStateInputs(ctx context.Context) (*nextStateInputs
 	// possible to make the best decision regarding an individual servers
 	// healthiness.
 	inputs.LatestIndex = a.raft.LastIndex()
+	// our latest index will be used to determine other server healthiness
+	// if we are the leader. If not then we will attempt to determine the
+	// latest index of the leader and use that.
+	inputs.IsLeader = a.raft.State() == raft.Leader
 
 	term, err := a.lastTerm()
 	if err != nil {
@@ -147,9 +174,6 @@ func (a *Autopilot) nextState(ctx context.Context) (*State, error) {
 	}
 
 	state := a.nextStateWithInputs(inputs)
-	if state.Leader == "" {
-		return nil, fmt.Errorf("Unabled to detect the leader server")
-	}
 	return state, nil
 }
 
@@ -157,10 +181,13 @@ func (a *Autopilot) nextState(ctx context.Context) (*State, error) {
 func (a *Autopilot) nextStateWithInputs(inputs *nextStateInputs) *State {
 	nextServers := a.nextServers(inputs)
 
+	// we record the firstStateTime so that we can ignore the server stabilization
+	// time up until the time we generated the first state becomes far enough
+	// in the past. Until that point in time all servers are considered stable.
 	newState := &State{
-		startTime: inputs.StartTime,
-		Healthy:   true,
-		Servers:   nextServers,
+		firstStateTime: inputs.FirstStateTime,
+		Healthy:        true,
+		Servers:        nextServers,
 	}
 
 	voterCount := 0
@@ -280,12 +307,6 @@ func (a *Autopilot) buildServerState(inputs *nextStateInputs, srv raft.Server) S
 		state.State = RaftNone
 	}
 
-	// overwrite the raft state to mark the leader as such instead of just
-	// a regular voter
-	if srv.ID == inputs.LeaderID {
-		state.State = RaftLeader
-	}
-
 	var previousHealthy *bool
 
 	a.stateLock.RLock()
@@ -320,13 +341,32 @@ func (a *Autopilot) buildServerState(inputs *nextStateInputs, srv raft.Server) S
 		state.Server.NodeStatus = NodeLeft
 	}
 
+	// overwrite the raft state to mark the leader as such instead of just
+	// a regular voter
+	if srv.ID == inputs.LeaderID {
+		state.State = RaftLeader
+		state.Server.IsLeader = true
+	}
+
 	// override the Stats if any where in the fetched results
 	if stats, found := inputs.FetchedStats[srv.ID]; found {
 		state.Stats = *stats
 	}
 
+	var leaderLastIndex uint64
+	var leaderLastTerm uint64
+
+	// determine what term/index the leader is on for use in health calculations
+	if inputs.IsLeader {
+		leaderLastIndex = inputs.LatestIndex
+		leaderLastTerm = inputs.LastTerm
+	} else if leader, ok := inputs.FetchedStats[inputs.LeaderID]; ok {
+		leaderLastIndex = leader.LastIndex
+		leaderLastTerm = leader.LastTerm
+	} // else - we have no leader and will keep the term/index at 0 to indicate this
+
 	// now populate the healthy field given the stats
-	state.Health.Healthy = state.isHealthy(inputs.LastTerm, inputs.LatestIndex, inputs.Config)
+	state.Health.Healthy = state.isHealthy(leaderLastTerm, leaderLastIndex, inputs.Config)
 	// overwrite the StableSince field if this is a new server or when
 	// the health status changes. No need for an else as we previously set
 	// it when we overwrote the whole Health structure when finding a

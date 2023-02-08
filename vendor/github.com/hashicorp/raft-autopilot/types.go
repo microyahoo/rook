@@ -108,19 +108,28 @@ func (s *ServerState) HasVotingRights() bool {
 // isHealthy determines whether this ServerState is considered healthy
 // based on the given Autopilot config
 func (s *ServerState) isHealthy(lastTerm uint64, leaderLastIndex uint64, conf *Config) bool {
+	// Raft hasn't been bootstrapped yet so nothing is healthy
+	if leaderLastIndex == 0 || lastTerm == 0 {
+		return false
+	}
+
+	// Check that the application still thinks the server is alive and well.
 	if s.Server.NodeStatus != NodeAlive {
 		return false
 	}
 
+	// Check to ensure that the server was contacted recently enough.
 	if s.Stats.LastContact > conf.LastContactThreshold || s.Stats.LastContact < 0 {
 		return false
 	}
 
+	// Check if the server has a different Raft term from the leader
 	if s.Stats.LastTerm != lastTerm {
 		return false
 	}
 
-	if leaderLastIndex > conf.MaxTrailingLogs && s.Stats.LastIndex < leaderLastIndex-conf.MaxTrailingLogs {
+	// Check if the server has fallen behind more than the configured max trailing logs value
+	if s.Stats.LastIndex+conf.MaxTrailingLogs < leaderLastIndex {
 		return false
 	}
 
@@ -167,7 +176,7 @@ type ServerStats struct {
 }
 
 type State struct {
-	startTime        time.Time
+	firstStateTime   time.Time
 	Healthy          bool
 	FailureTolerance int
 	Servers          map[raft.ServerID]*ServerState
@@ -178,14 +187,11 @@ type State struct {
 
 func (s *State) ServerStabilizationTime(c *Config) time.Duration {
 	// Only use the configured stabilization time when autopilot has
-	// been running for 110% of the configured stabilization time.
-	// Before that time we haven't been running long enough to
-	// be able to take these values into account. 110% is pretty
-	// arbitrary but with the default config would prevent the
-	// stabilization time from mattering for an extra second. This
-	// allows for leeway in how quickly we get the healthy RPC responses
-	// after autopilot is started.
-	if time.Since(s.startTime) > (c.ServerStabilizationTime*110)/100 {
+	// been running for at least as long as when the first state was
+	// generated. If it hasn't been running that long then we would
+	// guarantee that all checks against the stabilization time will
+	// fail which will result in excessive leader elections.
+	if time.Since(s.firstStateTime) > c.ServerStabilizationTime {
 		return c.ServerStabilizationTime
 	}
 
@@ -206,6 +212,7 @@ type Raft interface {
 	RemoveServer(id raft.ServerID, prevIndex uint64, timeout time.Duration) raft.IndexFuture
 	Stats() map[string]string
 	LeadershipTransferToServer(id raft.ServerID, address raft.ServerAddress) raft.Future
+	State() raft.RaftState
 }
 
 type ApplicationIntegration interface {

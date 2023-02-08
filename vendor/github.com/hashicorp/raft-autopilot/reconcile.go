@@ -9,6 +9,10 @@ import (
 
 // reconcile calculates and then applies promotions and demotions
 func (a *Autopilot) reconcile() error {
+	if !a.ReconciliationEnabled() {
+		return nil
+	}
+
 	conf := a.delegate.AutopilotConfig()
 	if conf == nil {
 		return nil
@@ -221,6 +225,10 @@ func (a *Autopilot) getFailedServers() (*FailedServers, int, error) {
 // Additionally the delegate will be consulted to determine if all of the removals should be done and
 // can filter the failed servers listings if need be.
 func (a *Autopilot) pruneDeadServers() error {
+	if !a.ReconciliationEnabled() {
+		return nil
+	}
+
 	conf := a.delegate.AutopilotConfig()
 	if conf == nil || !conf.CleanupDeadServers {
 		return nil
@@ -255,7 +263,7 @@ func (a *Autopilot) pruneDeadServers() error {
 		if voters-1 < int(conf.MinQuorum) {
 			a.logger.Debug("will not remove server as it would leave less voters than the minimum number allowed", "id", id, "min", conf.MinQuorum)
 		} else if maxRemoval < 1 {
-			a.logger.Debug("will not remove server as removal of a majority or servers is not safe", "id", id)
+			a.logger.Debug("will not remove server as removal of a majority of servers is not safe", "id", id)
 		} else if err := a.removeServer(id); err != nil {
 			return err
 		} else {
@@ -268,7 +276,7 @@ func (a *Autopilot) pruneDeadServers() error {
 		if voters-1 < int(conf.MinQuorum) {
 			a.logger.Debug("will not remove server as it would leave less voters than the minimum number allowed", "id", srv.ID, "min", conf.MinQuorum)
 		} else if maxRemoval < 1 {
-			a.logger.Debug("will not remove server as its removal would be unsafe due to affectingas removal of a majority or servers is not safe", "id", srv.ID)
+			a.logger.Debug("will not remove server as a removal of a majority of servers is not safe", "id", srv.ID)
 		} else {
 			a.logger.Info("Attempting removal of failed server node", "id", srv.ID, "name", srv.Name, "address", srv.Address)
 			a.delegate.RemoveFailedServer(srv)
