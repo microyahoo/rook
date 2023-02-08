@@ -135,27 +135,27 @@ func (m *CephManifestsPreviousVersion) GetObjectStoreUser(name, displayName, sto
 	return m.latest.GetObjectStoreUser(name, displayName, store, usercaps, maxsize, maxbuckets, maxobjects)
 }
 
-//GetBucketStorageClass returns the manifest to create object bucket
+// GetBucketStorageClass returns the manifest to create object bucket
 func (m *CephManifestsPreviousVersion) GetBucketStorageClass(storeName, storageClassName, reclaimPolicy string) string {
 	return m.latest.GetBucketStorageClass(storeName, storageClassName, reclaimPolicy)
 }
 
-//GetOBC returns the manifest to create object bucket claim
+// GetOBC returns the manifest to create object bucket claim
 func (m *CephManifestsPreviousVersion) GetOBC(claimName, storageClassName, objectBucketName, maxObject string, varBucketName bool) string {
 	return m.latest.GetOBC(claimName, storageClassName, objectBucketName, maxObject, varBucketName)
 }
 
-//GetOBCNotification returns the manifest to create object bucket claim
+// GetOBCNotification returns the manifest to create object bucket claim
 func (m *CephManifestsPreviousVersion) GetOBCNotification(claimName, storageClassName, objectBucketName, notificationName string, varBucketName bool) string {
 	return m.latest.GetOBCNotification(claimName, storageClassName, objectBucketName, notificationName, varBucketName)
 }
 
-//GetBucketNotification returns the manifest to create ceph bucket notification
+// GetBucketNotification returns the manifest to create ceph bucket notification
 func (m *CephManifestsPreviousVersion) GetBucketNotification(notificationName, topicName string) string {
 	return m.latest.GetBucketNotification(notificationName, topicName)
 }
 
-//GetBucketTopic returns the manifest to create ceph bucket topic
+// GetBucketTopic returns the manifest to create ceph bucket topic
 func (m *CephManifestsPreviousVersion) GetBucketTopic(topicName, storeName, httpEndpointService string) string {
 	return m.latest.GetBucketTopic(topicName, storeName, httpEndpointService)
 }
