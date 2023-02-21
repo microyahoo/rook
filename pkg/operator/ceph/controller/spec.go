@@ -48,6 +48,7 @@ const (
 	logVolumeName                           = "rook-ceph-log"
 	volumeMountSubPath                      = "data"
 	crashVolumeName                         = "rook-ceph-crash"
+	daemonSocketVolumeName                  = "rook-ceph-daemon-socket"
 	daemonSocketDir                         = "/run/ceph"
 	logCollector                            = "log-collector"
 	DaemonIDLabel                           = "ceph_daemon_id"
@@ -219,6 +220,9 @@ func DaemonVolumesBase(dataPaths *config.DataPathMap, keyringResourceName string
 		// logs are not persisted to host
 		vols = append(vols, StoredLogAndCrashVolume(dataPaths.HostLogDir(), dataPaths.HostCrashDir())...)
 	}
+	if dataPaths.HostSocketDir != "" {
+		vols = append(vols, StoredSocketVolume(dataPaths.HostSocketDir)...)
+	}
 	return vols
 }
 
@@ -288,6 +292,9 @@ func DaemonVolumeMounts(dataPaths *config.DataPathMap, keyringResourceName strin
 	if dataPaths.ContainerDataDir == "" {
 		// no data is stored in container, so there are no more mounts
 		return mounts
+	}
+	if dataPaths.HostSocketDir != "" {
+		mounts = append(mounts, StoredSocketVolumeMount(daemonSocketDir)...)
 	}
 	return append(mounts,
 		v1.VolumeMount{Name: "ceph-daemon-data", MountPath: dataPaths.ContainerDataDir},
@@ -559,6 +566,29 @@ func StoredLogAndCrashVolumeMount(varLogCephDir, varLibCephCrashDir string) []v1
 			Name:      crashVolumeName,
 			ReadOnly:  false,
 			MountPath: varLibCephCrashDir,
+		},
+	}
+}
+
+// StoreSocketVolume returns a pod volume sourced from the sockets.
+func StoredSocketVolume(hostSocketDir string) []v1.Volume {
+	return []v1.Volume{
+		{
+			Name: daemonSocketVolumeName,
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{Path: hostSocketDir},
+			},
+		},
+	}
+}
+
+// StoredSocketVolumeMount return a pod volume sourced from the stored sockets.
+func StoredSocketVolumeMount(socketDir string) []v1.VolumeMount {
+	return []v1.VolumeMount{
+		{
+			Name:      daemonSocketVolumeName,
+			ReadOnly:  false,
+			MountPath: socketDir,
 		},
 	}
 }
