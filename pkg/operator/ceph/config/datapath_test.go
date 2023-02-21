@@ -29,6 +29,7 @@ func TestNewStatefulDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "/var/lib/rook/mon-a/data",
 		ContainerDataDir:   "/var/lib/ceph/mon/ceph-a",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 
 	// osd
@@ -37,6 +38,7 @@ func TestNewStatefulDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "/var/lib/rook/osd0",
 		ContainerDataDir:   "/var/lib/ceph/osd/ceph-0",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 }
 
@@ -47,6 +49,7 @@ func TestNewStatelessDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "",
 		ContainerDataDir:   "/var/lib/ceph/mgr/ceph-a",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 
 	// mds
@@ -55,6 +58,7 @@ func TestNewStatelessDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "",
 		ContainerDataDir:   "/var/lib/ceph/mds/ceph-myfs.a",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 
 	// rgw
@@ -63,6 +67,7 @@ func TestNewStatelessDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "",
 		ContainerDataDir:   "/var/lib/ceph/rgw/ceph-objstore",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 }
 
@@ -73,5 +78,6 @@ func TestNewDatalessDaemonDataPathMap(t *testing.T) {
 		HostDataDir:        "/var/lib/rook",
 		ContainerDataDir:   "",
 		HostLogAndCrashDir: "/var/lib/rook/rook-ceph",
+		HostSocketDir:      "/var/run/ceph",
 	}, d)
 }

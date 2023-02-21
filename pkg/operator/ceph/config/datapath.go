@@ -23,6 +23,8 @@ import (
 	"path"
 )
 
+const hostSocketDir = "/var/run/ceph"
+
 // A DataPathMap is a struct which contains information about where Ceph daemon data is stored in
 // containers and whether the data should be persisted to the host. If it is persisted to the host,
 // directory on the host where the specific daemon's data is stored is given.
@@ -43,6 +45,9 @@ type DataPathMap struct {
 	// The log dir is always /var/log/ceph. If logs are not persisted to the
 	// host, logs are not shared between containers via empty dir or any other mechanism.
 	HostLogAndCrashDir string
+
+	// HostSocketDir dir represents the Ceph admin socket allows you to query a daemon via a socket interface.
+	HostSocketDir string
 }
 
 // NewStatefulDaemonDataPathMap returns a new DataPathMap for a daemon which requires a persistent
@@ -58,6 +63,7 @@ func NewStatefulDaemonDataPathMap(
 		HostDataDir:        path.Join(dataDirHostPath, daemonDataDirHostRelativePath),
 		ContainerDataDir:   cephDataDir(daemonType, daemonID),
 		HostLogAndCrashDir: path.Join(dataDirHostPath, namespace),
+		HostSocketDir:      hostSocketDir,
 	}
 }
 
@@ -70,6 +76,7 @@ func NewStatelessDaemonDataPathMap(
 		HostDataDir:        "",
 		ContainerDataDir:   cephDataDir(daemonType, daemonID),
 		HostLogAndCrashDir: path.Join(dataDirHostPath, namespace),
+		HostSocketDir:      hostSocketDir,
 	}
 }
 
@@ -80,6 +87,7 @@ func NewDatalessDaemonDataPathMap(namespace, dataDirHostPath string) *DataPathMa
 		HostDataDir:        dataDirHostPath,
 		ContainerDataDir:   "",
 		HostLogAndCrashDir: path.Join(dataDirHostPath, namespace),
+		HostSocketDir:      hostSocketDir,
 	}
 }
 
