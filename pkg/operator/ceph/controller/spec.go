@@ -479,6 +479,7 @@ func ChownCephDataDirsInitContainer(
 		"ceph:ceph",
 		config.VarLogCephDir,
 		config.VarLibCephCrashDir,
+		config.VarDaemonSocketDir,
 	)
 	if dpm.ContainerDataDir != "" {
 		args = append(args, dpm.ContainerDataDir)
