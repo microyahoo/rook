@@ -81,6 +81,8 @@ var (
 
 	// VarLibCephCrashDir defines Ceph crash reports directory.
 	VarLibCephCrashDir = path.Join(VarLibCephDir, "crash")
+
+	VarDaemonSocketDir = "/var/run/ceph"
 )
 
 // normalizeKey converts a key in any format to a key with underscores.
